@@ -18,7 +18,7 @@ URL = "https://github.com/samdixon/rust-rcon"
 EMAIL = "sdixon@posteo.net"
 AUTHOR = "Samuel Dixon"
 REQUIRES_PYTHON = ">=3.6.0"
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 
 # What packages are required for this module to be executed?
 REQUIRED = ["websocket-client"]
@@ -99,7 +99,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests", "venv",)),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
     install_requires=REQUIRED,
