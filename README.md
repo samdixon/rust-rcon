@@ -1,5 +1,5 @@
 # rust_rcon
-Simple Rust Rcon Library
+Simple library to talk with Rust's RCON interface
 
 
 ### Installation
