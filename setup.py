@@ -18,7 +18,7 @@ URL = "https://github.com/samdixon/rust-rcon"
 EMAIL = "sdixon@posteo.net"
 AUTHOR = "Samuel Dixon"
 REQUIRES_PYTHON = ">=3.6.0"
-VERSION = "0.0.3"
+VERSION = "1.0.0"
 
 # What packages are required for this module to be executed?
 REQUIRED = ["websocket-client"]
