@@ -1,53 +1,61 @@
 import json
 import time
+import websocket
+
+class CommandResultNotFound(BaseException):
+    pass
+
 
 class Command:
-    def __init__(self, command, identifier, ws, name="WebRcon"):
+    def __init__(
+        self,
+        command: str,
+        identifier: int,
+        ws: websocket.WebSocket,
+        name: str="WebRcon",
+        retry_count: int=2
+    ) -> None:
         self.command = command
         self.identifier = identifier
         self.name = name
-        self.Message = Message(self.identifier, self.command)
-
-        self.json_message = self.Message.json()
+        self.retry_count = retry_count
         self.ws = ws
-        self.result = None
-        self.parsed_result = None
+
+    def _format_command(self):
+        return json.dumps({
+            "Identifier": self.identifier,
+            "Message": self.command,
+            "Name": self.name,
+        })
 
     def run(self):
-        self.ws.send(self.json_message)
-        time.sleep(1)
-        result = self.ws.recv()
-        self.result = result
-        self._parse_result()
-        response = Response(
-                self.parsed_result['Message'], 
-                self.parsed_result['Identifier'],
-                self.parsed_result['Type'],
-                self.parsed_result['Stacktrace'])
-        return response
+        retry_counter = 0
+        self.ws.send(self._format_command())
+        while True:
+            res = json.loads(self.ws.recv())
+            if retry_counter >= self.retry_count:
+                raise CommandResultNotFound('command return not found')
+            if res.get('Identifier') == self.identifier:
+                break
+            retry_counter += 1
+        self.ws.close()
+        return Response(
+                res['Message'],
+                res['Identifier'],
+                res['Type'],
+                res['Stacktrace']
+            )
 
-    def _parse_result(self):
-        self.parsed_result = json.loads(self.result)
-
-class Message:
-    def __init__(self, Identifier, Message, Name="WebRcon"):
-        self.Identifier = Identifier
-        self.Message = Message
-        self.Name = Name
-
-    def json(self):
-        return json.dumps({
-                "Identifier": self.Identifier,
-                "Message": self.Message,
-                "Name": self.Name
-                })
 
 class Response:
-    def __init__(self, Message, Identifier, Type, Stacktrace):
+    def __init__(self, Message: str, Identifier: int, Type: str, Stacktrace: str) -> None:
         self.Message = Message
         self.Identifier = Identifier
         self.Type = Type
         self.Stacktrace = Stacktrace
 
+    def __repr__(self):
+        return f"Response(Message: {self.Message}, Identifier: {self.Identifier}, Type: {self.Type}, Stacktrace: {self.Stacktrace})"
+
     def __str__(self):
-        return f"{self.Message}, {self.Identifier}, {self.Type}, {self.Stacktrace}"
+        return f"Response(Message: {self.Message}, Identifier: {self.Identifier}, Type: {self.Type}, Stacktrace: {self.Stacktrace})"
